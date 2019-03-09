@@ -5,9 +5,9 @@
   "main": "./dist/lint-diff.js",
   "bin": "./dist/lint-diff.js",
   "scripts": {
+    "prepare": "npm run build",
     "build": "webpack",
     "lint": "eslint 'src/**/*.js'",
-    "prepublish": "npm run build",
     "test": "npm run lint"
   },
   "repository": {
