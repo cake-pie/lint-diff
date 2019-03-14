@@ -140,8 +140,15 @@ const reportResults = pipe(
 
 const run = (commitRange = 'HEAD') => Promise.resolve(commitRange)
   .then(getChangedFiles)
-  .map(getChangedFileLineMap(commitRange))
-  .then(applyLinter)
-  .then(reportResults)
+  .then(changedFiles => {
+    if (changedFiles.length == 0) {
+      return
+    }
+
+    Promise.resolve(changedFiles)
+      .map(getChangedFileLineMap(commitRange))
+      .then(applyLinter)
+      .then(reportResults)
+  })
 
 export default run
