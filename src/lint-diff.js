@@ -22,11 +22,13 @@ import {
   pluck,
   prop,
   propEq,
+  reduce,
   split,
   sum,
   tap,
 } from 'ramda'
 import { getChangedLinesFromDiff } from './lib/git'
+import { setGithubStatus } from './lib/ghstatus'
 
 const linter = new CLIEngine()
 const formatter = linter.getFormatter()
@@ -114,17 +116,22 @@ const logResults = pipe(
   console.log
 )
 
-const getErrorCountFromReport = pipe(
+const sumCounts = (aggr, result) => {
+  return { errorCount: aggr.errorCount + result.errorCount , warningCount: aggr.warningCount + result.warningCount }
+}
+
+const aggregateCounts = pipe(
   prop('results'),
-  pluck('errorCount'),
-  sum
+  reduce( sumCounts, { errorCount: 0, warningCount: 0 })
 )
 
 const exitProcess = curryN(2, n => process.exit(n))
 
 const reportResults = pipe(
   tap(logResults),
-  getErrorCountFromReport,
+  aggregateCounts,
+  tap(setGithubStatus),
+  prop('errorCount'),
   cond([
     [equals(0), exitProcess(0)],
     [T, exitProcess(1)],
